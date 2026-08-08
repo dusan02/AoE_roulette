@@ -1,139 +1,411 @@
-import { X, Settings2 } from 'lucide-react';
-import { useStore } from '../store/useStore';
-import { civilizations } from '../data/civilizations';
-import { maps } from '../data/maps';
+// ============================================================
+// AoE IV Roulette – Settings Panel Component
+// Slide-out panel rendered via React Portal (fixes z-index stacking bug)
+// ============================================================
 
-interface SettingsPanelProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+import { useState } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useRouletteStore } from '../store/useRouletteStore';
+import CIVS from '../data/civilizations';
+import MAPS from '../data/maps';
+import type { DlcName } from '../types';
 
-export const SettingsPanel = ({ isOpen, onClose }: SettingsPanelProps) => {
-  const { settings, setAllowDuplicateCivilizations, togglePlayer1Civilization, togglePlayer2Civilization, toggleMap, setSoundEnabled, setPlayer1Name, setPlayer2Name } = useStore();
+const DLC_ORDER: DlcName[] = [
+  'base',
+  'The Sultans Ascend',
+  'Knights of Cross and Rose',
+  'Dynasties of the East',
+  "Yue Fei's Legacy",
+];
 
-  if (!isOpen) return null;
+const DLC_LABELS: Record<DlcName, string> = {
+  base: '⚔ Base Game',
+  'The Sultans Ascend': '🌙 The Sultans Ascend',
+  'Knights of Cross and Rose': '✝ Knights of Cross and Rose',
+  'Dynasties of the East': '🐉 Dynasties of the East',
+  "Yue Fei's Legacy": "🏹 Yue Fei's Legacy",
+};
+
+export function SettingsPanel() {
+  const [open, setOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'civs' | 'maps' | 'rules'>('civs');
+
+  const {
+    player1Name, player2Name, setPlayer1Name, setPlayer2Name,
+    player1EnabledCivIds, player2EnabledCivIds, enabledMapIds,
+    allowDuplicateCivs,
+    togglePlayer1Civ, togglePlayer2Civ, toggleMap,
+    setAllPlayer1Civs, setAllPlayer2Civs, setAllMaps,
+    toggleAllowDuplicateCivs,
+  } = useRouletteStore();
+
+  // The modal is portalled directly to document.body to escape any parent
+  // stacking context (e.g. header's z-10 creating a new stacking context that
+  // would clip the panel below the main content's z-10).
+  const modalContent = (
+    <AnimatePresence>
+      {open && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            style={{ zIndex: 1000 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setOpen(false)}
+          />
+
+          {/* Panel */}
+          <motion.aside
+            className="fixed right-0 top-0 bottom-0 w-full max-w-md
+              bg-casino-950 border-l border-gold-700/40
+              shadow-[-20px_0_60px_rgba(0,0,0,0.8)]
+              flex flex-col"
+            style={{ zIndex: 1001 }}
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+          >
+            {/* Panel Header */}
+            <div className="flex items-center justify-between p-5 border-b border-gold-700/30 flex-shrink-0">
+              <div>
+                <h2 className="font-cinzel font-bold text-gold-300 text-lg tracking-wide">Settings</h2>
+                <p className="text-xs text-gray-500 mt-0.5">Saved automatically</p>
+              </div>
+              <button
+                onClick={() => setOpen(false)}
+                className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex border-b border-gold-700/30 flex-shrink-0">
+              {(['civs', 'maps', 'rules'] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`flex-1 py-3 text-xs font-semibold tracking-widest uppercase transition-colors
+                    ${activeTab === tab
+                      ? 'text-gold-300 border-b-2 border-gold-400 bg-gold-900/20'
+                      : 'text-gray-500 hover:text-gray-300'
+                    }`}
+                >
+                  {tab === 'civs' ? '⚔ Civs' : tab === 'maps' ? '🗺 Maps' : '📋 Rules'}
+                </button>
+              ))}
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto">
+              {activeTab === 'civs' && (
+                <CivsTab
+                  player1Name={player1Name}
+                  player2Name={player2Name}
+                  onSetPlayer1Name={setPlayer1Name}
+                  onSetPlayer2Name={setPlayer2Name}
+                  p1Enabled={player1EnabledCivIds}
+                  p2Enabled={player2EnabledCivIds}
+                  onToggleP1={togglePlayer1Civ}
+                  onToggleP2={togglePlayer2Civ}
+                  onSetAllP1={setAllPlayer1Civs}
+                  onSetAllP2={setAllPlayer2Civs}
+                />
+              )}
+              {activeTab === 'maps' && (
+                <MapsTab
+                  enabledMapIds={enabledMapIds}
+                  onToggle={toggleMap}
+                  onSetAll={setAllMaps}
+                />
+              )}
+              {activeTab === 'rules' && (
+                <RulesTab
+                  allowDuplicateCivs={allowDuplicateCivs}
+                  onToggleDuplicates={toggleAllowDuplicateCivs}
+                />
+              )}
+            </div>
+          </motion.aside>
+        </>
+      )}
+    </AnimatePresence>
+  );
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-      <div className="bg-gradient-to-b from-aoe-bgLight to-aoe-bgMid rounded-xl border border-aoe-border shadow-[0_20px_60px_rgba(0,0,0,0.7)] max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-aoe-bgLight p-4 border-b border-aoe-border flex justify-between items-center">
-          <h2 className="text-2xl font-medieval text-aoe-gold font-bold flex items-center gap-2">
-            <Settings2 size={24} />
-            Settings
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-aoe-text hover:text-aoe-gold transition-colors"
-          >
-            <X size={24} />
-          </button>
-        </div>
+    <>
+      {/* Settings Toggle Button */}
+      <motion.button
+        id="settings-toggle-btn"
+        onClick={() => setOpen((o) => !o)}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="flex items-center gap-2 px-3 py-1.5 rounded-full
+          bg-casino-800/80 border border-gold-700/40 text-gold-400
+          hover:border-gold-500/70 hover:text-gold-300
+          transition-colors text-sm font-semibold"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        Settings
+      </motion.button>
 
-        <div className="p-6 space-y-6">
-          {/* General Settings */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-medieval text-aoe-text font-bold border-b border-aoe-border pb-2">
-              General
-            </h3>
-            <div className="grid md:grid-cols-2 gap-4">
-              <label className="flex flex-col gap-2 text-aoe-text font-medieval">
-                <span>Player 1 Name</span>
-                <input
-                  value={settings.player1Name}
-                  onChange={(e) => setPlayer1Name(e.target.value)}
-                  className="bg-aoe-bg border border-aoe-border rounded px-3 py-2 text-aoe-text focus:outline-none focus:border-aoe-accent"
-                />
-              </label>
-              <label className="flex flex-col gap-2 text-aoe-text font-medieval">
-                <span>Player 2 Name</span>
-                <input
-                  value={settings.player2Name}
-                  onChange={(e) => setPlayer2Name(e.target.value)}
-                  className="bg-aoe-bg border border-aoe-border rounded px-3 py-2 text-aoe-text focus:outline-none focus:border-aoe-accent"
-                />
-              </label>
-            </div>
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.allowDuplicateCivilizations}
-                onChange={(e) => setAllowDuplicateCivilizations(e.target.checked)}
-                className="w-5 h-5 accent-aoe-gold"
-              />
-              <span className="text-aoe-text font-medieval">Allow Duplicate Civilizations</span>
-            </label>
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.soundEnabled}
-                onChange={(e) => setSoundEnabled(e.target.checked)}
-                className="w-5 h-5 accent-aoe-gold"
-              />
-              <span className="text-aoe-text font-medieval">Sound Enabled</span>
-            </label>
-          </div>
+      {/* Modal rendered at document.body level via Portal */}
+      {createPortal(modalContent, document.body)}
+    </>
+  );
+}
 
-          {/* Maps */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-medieval text-aoe-text font-bold border-b border-aoe-border pb-2">
-              Available Maps
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {maps.map((map) => (
-                <label key={map.id} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={settings.availableMaps.includes(map.id)}
-                    onChange={() => toggleMap(map.id)}
-                    className="w-4 h-4 accent-aoe-gold"
-                  />
-                  <span className="text-aoe-text text-sm">{map.name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+// ── Sub-tabs ──────────────────────────────────────────────────
 
-          {/* Player 1 Civilizations */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-medieval text-aoe-text font-bold border-b border-aoe-border pb-2">
-              Player 1 Available Civilizations
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {civilizations.map((civ) => (
-                <label key={civ.id} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={settings.player1AvailableCivilizations.includes(civ.id)}
-                    onChange={() => togglePlayer1Civilization(civ.id)}
-                    className="w-4 h-4 accent-aoe-gold"
-                  />
-                  <span className="text-aoe-text text-sm">{civ.name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+interface CivsTabProps {
+  player1Name: string;
+  player2Name: string;
+  onSetPlayer1Name: (name: string) => void;
+  onSetPlayer2Name: (name: string) => void;
+  p1Enabled: string[];
+  p2Enabled: string[];
+  onToggleP1: (id: string) => void;
+  onToggleP2: (id: string) => void;
+  onSetAllP1: (enabled: boolean) => void;
+  onSetAllP2: (enabled: boolean) => void;
+}
 
-          {/* Player 2 Civilizations */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-medieval text-aoe-text font-bold border-b border-aoe-border pb-2">
-              Player 2 Available Civilizations
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {civilizations.map((civ) => (
-                <label key={civ.id} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={settings.player2AvailableCivilizations.includes(civ.id)}
-                    onChange={() => togglePlayer2Civilization(civ.id)}
-                    className="w-4 h-4 accent-aoe-gold"
-                  />
-                  <span className="text-aoe-text text-sm">{civ.name}</span>
-                </label>
-              ))}
-            </div>
+function CivsTab({
+  player1Name, player2Name, onSetPlayer1Name, onSetPlayer2Name,
+  p1Enabled, p2Enabled, onToggleP1, onToggleP2, onSetAllP1, onSetAllP2,
+}: CivsTabProps) {
+  return (
+    <div className="p-4 space-y-6">
+      {/* Player 1 */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <PlayerNameInput
+            value={player1Name}
+            onChange={onSetPlayer1Name}
+            accentClass="text-blue-300 border-blue-700/50 focus:border-blue-400"
+            placeholder="Player 1"
+            id="player1-name-input"
+          />
+          <div className="flex gap-2 ml-3 flex-shrink-0">
+            <button onClick={() => onSetAllP1(true)} className="text-[10px] text-gold-500 hover:text-gold-300 font-semibold uppercase">All</button>
+            <span className="text-gray-600">|</span>
+            <button onClick={() => onSetAllP1(false)} className="text-[10px] text-gray-500 hover:text-gray-300 font-semibold uppercase">None</button>
           </div>
         </div>
+        <CivList civIds={p1Enabled} onToggle={onToggleP1} />
+      </section>
+
+      <div className="h-px bg-gold-700/20" />
+
+      {/* Player 2 */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <PlayerNameInput
+            value={player2Name}
+            onChange={onSetPlayer2Name}
+            accentClass="text-red-300 border-red-700/50 focus:border-red-400"
+            placeholder="Player 2"
+            id="player2-name-input"
+          />
+          <div className="flex gap-2 ml-3 flex-shrink-0">
+            <button onClick={() => onSetAllP2(true)} className="text-[10px] text-gold-500 hover:text-gold-300 font-semibold uppercase">All</button>
+            <span className="text-gray-600">|</span>
+            <button onClick={() => onSetAllP2(false)} className="text-[10px] text-gray-500 hover:text-gray-300 font-semibold uppercase">None</button>
+          </div>
+        </div>
+        <CivList civIds={p2Enabled} onToggle={onToggleP2} />
+      </section>
+    </div>
+  );
+}
+
+interface PlayerNameInputProps {
+  value: string;
+  onChange: (v: string) => void;
+  accentClass: string;
+  placeholder: string;
+  id: string;
+}
+
+function PlayerNameInput({ value, onChange, accentClass, placeholder, id }: PlayerNameInputProps) {
+  return (
+    <input
+      id={id}
+      type="text"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      maxLength={20}
+      className={`bg-transparent border-b font-cinzel font-bold text-sm tracking-wide
+        outline-none transition-colors w-full max-w-[160px]
+        ${accentClass}`}
+    />
+  );
+}
+
+function CivList({ civIds, onToggle }: { civIds: string[]; onToggle: (id: string) => void }) {
+  return (
+    <div className="space-y-4">
+      {DLC_ORDER.map((dlc) => {
+        const civs = CIVS.filter((c) => c.dlc === dlc);
+        if (civs.length === 0) return null;
+        return (
+          <div key={dlc}>
+            <div className="text-[10px] font-semibold tracking-widest uppercase text-gold-600/80 mb-2">
+              {DLC_LABELS[dlc]}
+            </div>
+            <div className="space-y-0.5">
+              {civs.map((civ) => {
+                const checked = civIds.includes(civ.id);
+                return (
+                  <label
+                    key={civ.id}
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer
+                      hover:bg-white/5 transition-colors select-none"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => onToggle(civ.id)}
+                      className="w-4 h-4 cursor-pointer flex-shrink-0"
+                    />
+                    <span className={`text-sm transition-colors leading-tight
+                      ${checked ? 'text-white' : 'text-gray-500'}`}>
+                      {civ.name}
+                    </span>
+                    {civ.type === 'variant' && (
+                      <span className="ml-auto text-[9px] text-purple-400/70 font-semibold uppercase tracking-wider flex-shrink-0">
+                        Variant
+                      </span>
+                    )}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+interface MapsTabProps {
+  enabledMapIds: string[];
+  onToggle: (id: string) => void;
+  onSetAll: (enabled: boolean) => void;
+}
+
+function MapsTab({ enabledMapIds, onToggle, onSetAll }: MapsTabProps) {
+  return (
+    <div className="p-4">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-cinzel font-bold text-gold-300">Available Maps</h3>
+        <div className="flex gap-2">
+          <button onClick={() => onSetAll(true)} className="text-[10px] text-gold-500 hover:text-gold-300 font-semibold uppercase">All</button>
+          <span className="text-gray-600">|</span>
+          <button onClick={() => onSetAll(false)} className="text-[10px] text-gray-500 hover:text-gray-300 font-semibold uppercase">None</button>
+        </div>
+      </div>
+
+      {(['land', 'hybrid', 'water'] as const).map((type) => {
+        const typeMaps = MAPS.filter((m) => m.type === type);
+        const typeLabels = { land: '⛰ Land Maps', hybrid: '💧 Hybrid Maps', water: '🌊 Water Maps' };
+        return (
+          <div key={type} className="mb-5">
+            <div className="text-[10px] font-semibold tracking-widest uppercase text-gold-600/80 mb-2">
+              {typeLabels[type]}
+            </div>
+            <div className="space-y-0.5">
+              {typeMaps.map((map) => {
+                const checked = enabledMapIds.includes(map.id);
+                return (
+                  <label
+                    key={map.id}
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer
+                      hover:bg-white/5 transition-colors select-none"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => onToggle(map.id)}
+                      className="w-4 h-4 cursor-pointer flex-shrink-0"
+                    />
+                    <span className={`text-sm transition-colors
+                      ${checked ? 'text-white' : 'text-gray-500'}`}>
+                      {map.name}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+interface RulesTabProps {
+  allowDuplicateCivs: boolean;
+  onToggleDuplicates: () => void;
+}
+
+function RulesTab({ allowDuplicateCivs, onToggleDuplicates }: RulesTabProps) {
+  return (
+    <div className="p-4 space-y-4">
+      <h3 className="text-sm font-cinzel font-bold text-gold-300 mb-4">Game Rules</h3>
+
+      <ToggleRow
+        id="allow-duplicate-civs-toggle"
+        label="Allow Duplicate Civilizations"
+        description="Both players may be assigned the same civilization"
+        checked={allowDuplicateCivs}
+        onChange={onToggleDuplicates}
+      />
+    </div>
+  );
+}
+
+interface ToggleRowProps {
+  id: string;
+  label: string;
+  description: string;
+  checked: boolean;
+  onChange: () => void;
+}
+
+function ToggleRow({ id, label, description, checked, onChange }: ToggleRowProps) {
+  return (
+    <div className="flex items-start gap-4 p-3 rounded-xl bg-casino-900/60 border border-white/5">
+      {/* Native checkbox hidden, custom toggle visual */}
+      <button
+        id={id}
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        onClick={onChange}
+        className={`relative flex-shrink-0 w-11 h-6 rounded-full transition-colors duration-200 mt-0.5 cursor-pointer
+          ${checked ? 'bg-gold-500' : 'bg-gray-700'}`}
+      >
+        <span
+          className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200
+            ${checked ? 'translate-x-5' : 'translate-x-0'}`}
+        />
+      </button>
+      <div className="flex-1">
+        <div className="text-sm font-semibold text-white">{label}</div>
+        <div className="text-xs text-gray-500 mt-0.5">{description}</div>
       </div>
     </div>
   );
-};
+}

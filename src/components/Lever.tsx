@@ -1,56 +1,70 @@
-import { motion } from 'framer-motion';
-import { Zap } from 'lucide-react';
+// ============================================================
+// AoE IV Roulette – Lever Component
+// Animated SVG lever on the side of the machine
+// ============================================================
+
+import { useRef } from 'react';
+import { motion, useAnimate } from 'framer-motion';
 
 interface LeverProps {
-  isSpinning: boolean;
   onPull: () => void;
+  disabled?: boolean;
 }
 
-export const Lever = ({ isSpinning, onPull }: LeverProps) => {
-  return (
-    <motion.button
-      onClick={onPull}
-      disabled={isSpinning}
-      whileHover={isSpinning ? {} : { scale: 1.03, y: -2 }}
-      whileTap={isSpinning ? {} : { scale: 0.95, y: 6 }}
-      animate={{ y: isSpinning ? [0, 3, -1, 0] : 0 }}
-      transition={{ duration: 0.45, repeat: isSpinning ? Infinity : 0 }}
-      className="relative flex items-center gap-3 font-bold py-4 px-8 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed"
-      style={{
-        background: 'linear-gradient(170deg, #e8c447 0%, #c8a020 40%, #a07810 100%)',
-        boxShadow: isSpinning
-          ? '0 4px 14px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
-          : '0 10px 28px rgba(0,0,0,0.45), 0 2px 0 #7a5a08, inset 0 1px 0 rgba(255,255,255,0.3)',
-        border: '2px solid #c8a020',
-        color: '#1a0a00',
-      }}
-    >
-      {/* wood handle stub left */}
-      <div
-        className="absolute -left-7 top-1/2 -translate-y-1/2 rounded-full"
-        style={{ width: 22, height: 68, background: 'linear-gradient(90deg, #3a1e06, #5c3010, #3a1e06)', border: '2px solid #a07030' }}
-      />
-      {/* red knob */}
-      <motion.div
-        className="absolute -left-9 rounded-full"
-        style={{
-          top: -6, width: 28, height: 28,
-          background: 'radial-gradient(circle at 35% 30%, #ff6060, #cc1010)',
-          border: '2px solid #ff9090',
-          boxShadow: '0 4px 14px rgba(200,0,0,0.55)',
-        }}
-        animate={{ y: isSpinning ? [0, 3, -1, 0] : 0 }}
-        transition={{ duration: 0.45, repeat: isSpinning ? Infinity : 0 }}
-      />
+export function Lever({ onPull, disabled = false }: LeverProps) {
+  const [scope, animate] = useAnimate();
+  const pulling = useRef(false);
 
+  const handlePull = async () => {
+    if (disabled || pulling.current) return;
+    pulling.current = true;
+
+    // Lever pull-down animation
+    await animate(scope.current, { rotate: 40 }, { duration: 0.15, ease: 'easeOut' });
+    onPull();
+    // Snap back up
+    await animate(scope.current, { rotate: -10 }, { duration: 0.1, ease: 'easeIn' });
+    await animate(scope.current, { rotate: 0 }, { duration: 0.2, ease: 'easeOut' });
+
+    pulling.current = false;
+  };
+
+  return (
+    <button
+      onClick={handlePull}
+      disabled={disabled}
+      aria-label="Pull lever"
+      className={`flex flex-col items-center gap-1 select-none focus:outline-none
+        ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+    >
+      {/* Lever ball */}
       <motion.div
-        animate={{ rotate: isSpinning ? 360 : 0 }}
-        transition={{ duration: 0.9, repeat: isSpinning ? Infinity : 0, ease: 'linear' }}
-        className="relative z-10"
+        ref={scope}
+        style={{ transformOrigin: 'bottom center' }}
+        className="flex flex-col items-center"
+        whileHover={disabled ? {} : { scale: 1.05 }}
       >
-        <Zap size={22} />
+        {/* Ball */}
+        <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-red-400 via-red-600 to-red-900
+          border-2 border-red-300/50 shadow-[0_0_15px_rgba(239,68,68,0.6),inset_0_2px_4px_rgba(255,255,255,0.3)]
+          flex items-center justify-center">
+          <div className="w-3 h-3 rounded-full bg-red-200/40" />
+        </div>
+
+        {/* Lever rod */}
+        <div className="w-2.5 h-24 bg-gradient-to-b from-gold-300 via-gold-500 to-gold-700
+          rounded-b-sm shadow-[0_0_8px_rgba(200,168,75,0.4),inset_1px_0_2px_rgba(255,255,255,0.3)]
+          border-x border-gold-600/50" />
       </motion.div>
-      <span className="text-xl font-black tracking-wider relative z-10">PULL LEVER</span>
-    </motion.button>
+
+      {/* Lever base mount */}
+      <div className="w-8 h-4 bg-gradient-to-b from-gray-600 to-gray-800
+        rounded-md border border-gray-500/50 shadow-inner" />
+
+      {/* Label */}
+      <span className="text-[10px] font-cinzel tracking-widest text-gold-500/70 uppercase mt-1">
+        Pull
+      </span>
+    </button>
   );
-};
+}

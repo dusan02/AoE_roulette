@@ -1,12 +1,19 @@
-export const colors = [
-  { id: 'blue', name: 'Blue', hex: '#3B82F6' },
-  { id: 'red', name: 'Red', hex: '#EF4444' },
-  { id: 'green', name: 'Green', hex: '#22C55E' },
-  { id: 'yellow', name: 'Yellow', hex: '#EAB308' },
-  { id: 'purple', name: 'Purple', hex: '#A855F7' },
-  { id: 'orange', name: 'Orange', hex: '#F97316' },
-  { id: 'cyan', name: 'Cyan', hex: '#06B6D4' },
-  { id: 'pink', name: 'Pink', hex: '#EC4899' },
-] as const;
+// ============================================================
+// AoE IV Roulette – Player Colors Data
+// Standard AoE IV player colors
+// ============================================================
 
-export type ColorId = typeof colors[number]['id'];
+import type { PlayerColor } from '../types';
+
+const PLAYER_COLORS: PlayerColor[] = [
+  { id: 'blue', name: 'Blue', hex: '#1a6fe8', emoji: '🔵' },
+  { id: 'red', name: 'Red', hex: '#e82222', emoji: '🔴' },
+  { id: 'green', name: 'Green', hex: '#22a832', emoji: '🟢' },
+  { id: 'yellow', name: 'Yellow', hex: '#e8c022', emoji: '🟡' },
+  { id: 'teal', name: 'Teal', hex: '#22c8b8', emoji: '🩵' },
+  { id: 'purple', name: 'Purple', hex: '#8822e8', emoji: '🟣' },
+  { id: 'orange', name: 'Orange', hex: '#e86822', emoji: '🟠' },
+  { id: 'pink', name: 'Pink', hex: '#e822a0', emoji: '🩷' },
+];
+
+export default PLAYER_COLORS;

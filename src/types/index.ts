@@ -1,48 +1,74 @@
-import { CivilizationId } from '../data/civilizations';
-import { MapId } from '../data/maps';
-import { ColorId } from '../data/colors';
+// ============================================================
+// AoE IV Roulette – Shared TypeScript Types
+// ============================================================
 
-export type { CivilizationId, MapId, ColorId };
+export type MapType = 'land' | 'hybrid' | 'water';
+export type CivType = 'full' | 'variant';
+export type DlcName =
+  | 'base'
+  | 'The Sultans Ascend'
+  | 'Knights of Cross and Rose'
+  | 'Dynasties of the East'
+  | "Yue Fei's Legacy";
+
+export interface Civilization {
+  id: string;
+  name: string;
+  dlc: DlcName;
+  type: CivType;
+  /** Parent civ name for variant civilizations */
+  parentCiv?: string;
+}
+
+export interface GameMap {
+  id: string;
+  name: string;
+  type: MapType;
+}
+
+export interface PlayerColor {
+  id: string;
+  name: string;
+  /** CSS hex color value */
+  hex: string;
+  /** Emoji or unicode for copy output */
+  emoji: string;
+}
+
+export interface PlayerResult {
+  civilization: Civilization;
+  color: PlayerColor;
+}
 
 export interface RouletteResult {
-  map: MapId;
-  player1: {
-    civilization: CivilizationId;
-    color: ColorId;
-  };
-  player2: {
-    civilization: CivilizationId;
-    color: ColorId;
-  };
-}
-
-export interface Settings {
-  allowDuplicateCivilizations: boolean;
-  player1AvailableCivilizations: CivilizationId[];
-  player2AvailableCivilizations: CivilizationId[];
-  availableMaps: MapId[];
-  soundEnabled: boolean;
-  player1Name: string;
-  player2Name: string;
-}
-
-export type ReelType = 'map' | 'player1' | 'player2';
-
-export interface ReelState {
-  type: ReelType;
-  isSpinning: boolean;
-  currentValue: string;
+  map: GameMap;
+  player1: PlayerResult;
+  player2: PlayerResult;
+  timestamp: number;
 }
 
 export interface MatchRecord {
   id: string;
-  date: string;
-  map: MapId;
-  player1Name: string;
-  player1Civilization: CivilizationId;
-  player1Color: ColorId;
-  player2Name: string;
-  player2Civilization: CivilizationId;
-  player2Color: ColorId;
+  date: string; // ISO string
+  mapId: string;
+  player1CivId: string;
+  player1ColorId: string;
+  player2CivId: string;
+  player2ColorId: string;
   winner: 'player1' | 'player2';
 }
+
+export interface AppSettings {
+  /** Civilization IDs enabled for Player 1 */
+  player1EnabledCivIds: string[];
+  /** Civilization IDs enabled for Player 2 */
+  player2EnabledCivIds: string[];
+  /** Map IDs enabled for the roulette */
+  enabledMapIds: string[];
+  /** Whether duplicate civilizations are allowed */
+  allowDuplicateCivs: boolean;
+  /** Whether audio is muted */
+  muted: boolean;
+}
+
+export type SpinPhase = 'idle' | 'spinning' | 'stopping' | 'done';

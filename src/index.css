@@ -1,10 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: Georgia, serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* ============================================================
+   AoE IV Roulette – Global Styles
+   ============================================================ */
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-casino-950 text-white font-inter;
+    background-image:
+      radial-gradient(ellipse at 50% 0%, rgba(200, 168, 75, 0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 20% 80%, rgba(100, 20, 20, 0.08) 0%, transparent 50%);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-casino-950;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gold-700 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gold-500;
+  }
+}
+
+@layer components {
+  /* Gold text shadow utility */
+  .text-shadow-gold {
+    text-shadow: 0 0 20px rgba(200, 168, 75, 0.6), 0 0 40px rgba(200, 168, 75, 0.3);
+  }
+
+  /* Casino machine border gradient */
+  .border-gradient-gold {
+    border-image: linear-gradient(135deg, #c8a84b, #7a6020, #c8a84b) 1;
+  }
+
+  /* Reel spinning blur */
+  .reel-spinning {
+    filter: blur(0.5px);
+  }
+
+  /* Glowing swatch */
+  .color-swatch-glow {
+    box-shadow: 0 0 12px var(--swatch-color, rgba(255, 255, 255, 0.5));
+  }
+
+  /* Gold shimmer text */
+  .text-gold-shimmer {
+    background: linear-gradient(90deg, #c8a84b, #f5d97a, #c8a84b, #f5d97a, #c8a84b);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3s linear infinite;
+  }
+}
+
+@layer utilities {
+  /* Perspective for 3D reel effect */
+  .perspective-500 {
+    perspective: 500px;
+  }
+
+  /* No select utility for interactive elements */
+  .no-select {
+    user-select: none;
+    -webkit-user-select: none;
+  }
 }
