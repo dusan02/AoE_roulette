@@ -162,7 +162,9 @@ export function MainPage() {
       </header>
 
       {/* Main */}
-      <main className="flex flex-col items-center justify-center gap-6 px-4 sm:px-6 py-8 max-w-3xl mx-auto pt-16">
+      <main className={`flex flex-col items-center justify-center gap-6 px-4 sm:px-6 py-8 mx-auto pt-16 ${
+        activeTab === 'roulette' ? 'max-w-3xl' : 'max-w-6xl w-full'
+      }`}>
 
         {activeTab === 'roulette' && (
           <>

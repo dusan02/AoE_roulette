@@ -225,19 +225,19 @@ export function StatsPanel() {
         <td className="py-2.5 px-2 text-xs text-gold-200/70 whitespace-nowrap">
           {formatDate(match.date)}
         </td>
-        <td className="py-2.5 px-2 text-sm text-gold-100">{map?.name ?? match.mapId}</td>
-        <td className="py-2.5 px-2">
-          <span className="text-sm text-gold-100">{p1Civ?.name ?? match.player1CivId}</span>
+        <td className="py-2.5 px-3 text-sm text-gold-100 whitespace-nowrap">{map?.name ?? match.mapId}</td>
+        <td className="py-2.5 px-3">
+          <span className="text-sm text-gold-100 whitespace-nowrap">{p1Civ?.name ?? match.player1CivId}</span>
         </td>
-        <td className="py-2.5 px-2">
-          <span className="text-sm text-gold-100">{p2Civ?.name ?? match.player2CivId}</span>
+        <td className="py-2.5 px-3">
+          <span className="text-sm text-gold-100 whitespace-nowrap">{p2Civ?.name ?? match.player2CivId}</span>
         </td>
-        <td className="py-2.5 px-2 text-center">
+        <td className="py-2.5 px-3 text-center whitespace-nowrap">
           <span className="text-sm font-bold text-gold-300">
             {winnerName}
           </span>
         </td>
-        <td className="py-2.5 px-2 text-right">
+        <td className="py-2.5 px-3 text-right whitespace-nowrap">
           <div className="flex items-center justify-end gap-2">
             <button
               onClick={() => startEdit(match)}
@@ -258,7 +258,7 @@ export function StatsPanel() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6 px-4 sm:px-6 py-8">
+    <div className="w-full max-w-6xl mx-auto space-y-6 px-4 sm:px-6 py-8">
       {/* Summary cards */}
       <div className="grid grid-cols-3 gap-4">
         <div className="rounded-xl border border-gold-700/40 bg-casino-800/60 p-4 text-center">
@@ -354,15 +354,15 @@ export function StatsPanel() {
           </div>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-gold-700/30 bg-casino-900/40">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[700px]">
               <thead>
                 <tr className="text-gold-500/70 text-[10px] uppercase tracking-wider border-b border-gold-700/30 bg-casino-800/60">
-                  <th className="text-left py-3 px-2">Dátum</th>
-                  <th className="text-left py-3 px-2">Mapa</th>
-                  <th className="text-left py-3 px-2">{player1Name}</th>
-                  <th className="text-left py-3 px-2">{player2Name}</th>
-                  <th className="text-center py-3 px-2">Víťaz</th>
-                  <th className="py-3 px-2"></th>
+                  <th className="text-left py-3 px-3 whitespace-nowrap">Dátum</th>
+                  <th className="text-left py-3 px-3 whitespace-nowrap">Mapa</th>
+                  <th className="text-left py-3 px-3 whitespace-nowrap">{player1Name}</th>
+                  <th className="text-left py-3 px-3 whitespace-nowrap">{player2Name}</th>
+                  <th className="text-center py-3 px-3 whitespace-nowrap">Víťaz</th>
+                  <th className="py-3 px-3"></th>
                 </tr>
               </thead>
               <tbody>
