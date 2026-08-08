@@ -31,7 +31,7 @@ export const RouletteView = () => {
         setTimeout(tick, interval);
       };
       tick();
-    } catch (_) { /* AudioContext unavailable */ }
+    } catch { /* AudioContext unavailable */ }
   };
 
   useEffect(() => {
@@ -43,6 +43,7 @@ export const RouletteView = () => {
     playSpinSound(1500);
     const t = setTimeout(() => setSpinning(false), 1500);
     return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSpinning, currentResult]);
 
   const handlePull = () => {

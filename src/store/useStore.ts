@@ -28,6 +28,8 @@ interface RouletteStore {
   // Match history
   matchHistory: MatchRecord[];
   recordWin: (winner: 'player1' | 'player2') => void;
+  addMatch: (match: MatchRecord) => void;
+  updateMatch: (match: MatchRecord) => void;
   deleteMatch: (id: string) => void;
   clearHistory: () => void;
 }
@@ -123,7 +125,7 @@ export const useStore = create<RouletteStore>()(
         // Random selection
         const randomMap = settings.availableMaps[Math.floor(Math.random() * settings.availableMaps.length)];
         
-        let player1Civ = settings.player1AvailableCivilizations[Math.floor(Math.random() * settings.player1AvailableCivilizations.length)];
+        const player1Civ = settings.player1AvailableCivilizations[Math.floor(Math.random() * settings.player1AvailableCivilizations.length)];
         let player2Civ = settings.player2AvailableCivilizations[Math.floor(Math.random() * settings.player2AvailableCivilizations.length)];
 
         // Enforce no duplicate civilizations if setting is disabled
@@ -195,6 +197,12 @@ export const useStore = create<RouletteStore>()(
         };
         set((s) => ({ matchHistory: [record, ...s.matchHistory] }));
       },
+      addMatch: (match) =>
+        set((s) => ({ matchHistory: [match, ...s.matchHistory] })),
+      updateMatch: (match) =>
+        set((s) => ({
+          matchHistory: s.matchHistory.map((m) => (m.id === match.id ? match : m)),
+        })),
       deleteMatch: (id) =>
         set((s) => ({ matchHistory: s.matchHistory.filter((m) => m.id !== id) })),
       clearHistory: () => set({ matchHistory: [] }),
