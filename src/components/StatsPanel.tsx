@@ -217,6 +217,8 @@ export function StatsPanel() {
     const p1Civ = civById(match.player1CivId);
     const p2Civ = civById(match.player2CivId);
     const winnerName = match.winner === 'player1' ? player1Name : player2Name;
+    const p1Won = match.winner === 'player1';
+    const p2Won = match.winner === 'player2';
 
     return (
       <tr
@@ -228,10 +230,22 @@ export function StatsPanel() {
         </td>
         <td className="py-2.5 px-3 text-sm text-gold-100 whitespace-nowrap">{map?.name ?? match.mapId}</td>
         <td className="py-2.5 px-3">
-          <span className="text-sm text-gold-100 whitespace-nowrap">{p1Civ?.name ?? match.player1CivId}</span>
+          <span
+            className={`inline-block text-sm whitespace-nowrap rounded px-2 py-0.5 ${
+              p1Won ? 'bg-green-500/15 text-green-100' : 'text-gold-100'
+            }`}
+          >
+            {p1Civ?.name ?? match.player1CivId}
+          </span>
         </td>
         <td className="py-2.5 px-3">
-          <span className="text-sm text-gold-100 whitespace-nowrap">{p2Civ?.name ?? match.player2CivId}</span>
+          <span
+            className={`inline-block text-sm whitespace-nowrap rounded px-2 py-0.5 ${
+              p2Won ? 'bg-green-500/15 text-green-100' : 'text-gold-100'
+            }`}
+          >
+            {p2Civ?.name ?? match.player2CivId}
+          </span>
         </td>
         <td className="py-2.5 px-3 text-center whitespace-nowrap">
           <span className="text-sm font-bold text-gold-300">
