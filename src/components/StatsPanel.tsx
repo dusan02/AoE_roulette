@@ -135,21 +135,21 @@ export function StatsPanel() {
     return (
       <tr
         key={isNew ? 'new' : match.id}
-        className="border-b border-gold-700/30 bg-casino-800/60"
+        className="border-l-4 border-l-gold-400 border-b border-gold-500/50 bg-gold-900/20 shadow-[0_0_20px_rgba(200,168,75,0.15)]"
       >
-        <td className="py-2 px-2 align-top min-w-[160px]">
+        <td className="py-3 px-3 align-top min-w-[170px]">
           <input
             type="datetime-local"
             value={formatDateForInput(draft.date)}
             onChange={(e) => updateDraft('date', new Date(e.target.value).toISOString())}
-            className="w-full bg-casino-900 border border-gold-700/50 rounded px-2 py-1.5 text-xs text-gold-100 focus:border-gold-400 focus:outline-none"
+            className="w-full bg-casino-900 border border-gold-600/60 rounded px-2.5 py-2 text-xs text-gold-100 focus:border-gold-400 focus:outline-none"
           />
         </td>
-        <td className="py-2 px-2 align-top">
+        <td className="py-3 px-3 align-top min-w-[180px]">
           <select
             value={draft.mapId}
             onChange={(e) => updateDraft('mapId', e.target.value)}
-            className="w-full bg-casino-900 border border-gold-700/50 rounded px-2 py-1.5 text-xs text-gold-100 focus:border-gold-400 focus:outline-none"
+            className="w-full min-w-[150px] bg-casino-900 border border-gold-600/60 rounded px-2.5 py-2 text-xs text-gold-100 focus:border-gold-400 focus:outline-none"
           >
             {SORTED_MAPS.map((map) => (
               <option key={map.id} value={map.id}>
@@ -158,11 +158,11 @@ export function StatsPanel() {
             ))}
           </select>
         </td>
-        <td className="py-2 px-2 align-top">
+        <td className="py-3 px-3 align-top min-w-[180px]">
           <select
             value={draft.player1CivId}
             onChange={(e) => updateDraft('player1CivId', e.target.value)}
-            className="w-full bg-casino-900 border border-gold-700/50 rounded px-2 py-1.5 text-xs text-gold-100 focus:border-gold-400 focus:outline-none"
+            className="w-full min-w-[150px] bg-casino-900 border border-gold-600/60 rounded px-2.5 py-2 text-xs text-gold-100 focus:border-gold-400 focus:outline-none"
           >
             {SORTED_CIVS.map((civ) => (
               <option key={civ.id} value={civ.id}>
@@ -171,11 +171,11 @@ export function StatsPanel() {
             ))}
           </select>
         </td>
-        <td className="py-2 px-2 align-top">
+        <td className="py-3 px-3 align-top min-w-[180px]">
           <select
             value={draft.player2CivId}
             onChange={(e) => updateDraft('player2CivId', e.target.value)}
-            className="w-full bg-casino-900 border border-gold-700/50 rounded px-2 py-1.5 text-xs text-gold-100 focus:border-gold-400 focus:outline-none"
+            className="w-full min-w-[150px] bg-casino-900 border border-gold-600/60 rounded px-2.5 py-2 text-xs text-gold-100 focus:border-gold-400 focus:outline-none"
           >
             {SORTED_CIVS.map((civ) => (
               <option key={civ.id} value={civ.id}>
@@ -184,27 +184,27 @@ export function StatsPanel() {
             ))}
           </select>
         </td>
-        <td className="py-2 px-2 align-top text-center">
+        <td className="py-3 px-3 align-top text-center min-w-[120px]">
           <select
             value={draft.winner}
             onChange={(e) => updateDraft('winner', e.target.value as 'player1' | 'player2')}
-            className="bg-casino-900 border border-gold-700/50 rounded px-2 py-1.5 text-xs text-gold-100 focus:border-gold-400 focus:outline-none"
+            className="w-full min-w-[100px] bg-casino-900 border border-gold-600/60 rounded px-2.5 py-2 text-xs text-gold-100 focus:border-gold-400 focus:outline-none"
           >
             <option value="player1">{player1Name}</option>
             <option value="player2">{player2Name}</option>
           </select>
         </td>
-        <td className="py-2 px-2 align-top text-right">
-          <div className="flex items-center justify-end gap-1">
+        <td className="py-3 px-3 align-top text-right min-w-[120px]">
+          <div className="flex items-center justify-end gap-1.5">
             <button
               onClick={saveMatch}
-              className="px-2 py-1 rounded text-xs font-semibold bg-gold-600 text-casino-950 hover:bg-gold-500"
+              className="px-3 py-2 rounded-lg text-xs font-bold bg-gold-500 text-casino-950 hover:bg-gold-400 shadow-[0_0_12px_rgba(200,168,75,0.4)] transition-all"
             >
               Uložiť
             </button>
             <button
               onClick={cancelEdit}
-              className="px-2 py-1 rounded text-xs font-semibold bg-casino-700 text-gold-100 hover:bg-casino-600"
+              className="px-3 py-2 rounded-lg text-xs font-bold bg-casino-700 text-gold-100 hover:bg-casino-600 transition-all"
             >
               Zrušiť
             </button>
@@ -376,20 +376,19 @@ export function StatsPanel() {
               </tbody>
               {matchHistory.length > 0 && (
                 <tfoot>
-                  <tr className="border-t-2 border-gold-400/30 bg-casino-800/60">
-                    <td colSpan={4} className="py-3 px-2 font-cinzel font-bold text-gold-200 text-xs uppercase tracking-wider">
+                  <tr className="border-t-2 border-gold-400/50 bg-casino-800/80">
+                    <td colSpan={4} className="py-3.5 px-3 font-cinzel font-black text-gold-100 text-sm uppercase tracking-wider">
                       Víťazstvá spolu
                     </td>
-                    <td className="py-3 px-2 text-center">
-                      <span className="font-bold text-blue-400">
+                    <td className="py-3.5 px-3 text-center" colSpan={2}>
+                      <span className="text-xl font-cinzel font-black text-blue-400">
                         {p1Wins}
                       </span>
-                      <span className="text-gold-500/50 mx-1">:</span>
-                      <span className="font-bold text-red-400">
+                      <span className="text-gold-400/70 mx-2 text-lg font-cinzel font-bold">:</span>
+                      <span className="text-xl font-cinzel font-black text-red-400">
                         {p2Wins}
                       </span>
                     </td>
-                    <td></td>
                   </tr>
                 </tfoot>
               )}
