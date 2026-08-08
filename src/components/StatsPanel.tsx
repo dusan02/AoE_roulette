@@ -3,7 +3,7 @@
 // Editable match history with player win counts
 // ============================================================
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouletteStore } from '../store/useRouletteStore';
 import CIVS from '../data/civilizations';
 import MAPS from '../data/maps';
@@ -52,6 +52,8 @@ export function StatsPanel() {
     matchHistory,
     player1Name,
     player2Name,
+    pendingMatch,
+    clearPendingMatch,
     addMatch,
     updateMatch,
     deleteMatch,
@@ -61,6 +63,15 @@ export function StatsPanel() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<MatchRecord | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+
+  // When a pending match arrives from a spin, open it as an editable draft row
+  useEffect(() => {
+    if (pendingMatch) {
+      setIsAdding(true);
+      setDraft({ ...pendingMatch });
+      setEditingId(null);
+    }
+  }, [pendingMatch]);
 
   const p1Wins = matchHistory.filter((m) => m.winner === 'player1').length;
   const p2Wins = matchHistory.filter((m) => m.winner === 'player2').length;
@@ -91,6 +102,7 @@ export function StatsPanel() {
     setEditingId(null);
     setDraft(null);
     setIsAdding(false);
+    if (pendingMatch) clearPendingMatch();
   };
 
   const saveMatch = () => {
@@ -107,6 +119,7 @@ export function StatsPanel() {
     setEditingId(null);
     setDraft(null);
     setIsAdding(false);
+    if (pendingMatch) clearPendingMatch();
   };
 
   const updateDraft = <K extends keyof MatchRecord>(field: K, value: MatchRecord[K]) => {
@@ -328,6 +341,12 @@ export function StatsPanel() {
             )}
           </div>
         </div>
+
+        {pendingMatch && (
+          <div className="rounded-lg border border-gold-500/40 bg-gold-900/20 px-4 py-2.5 text-xs text-gold-200">
+            🎲 Nový zápas z roztočenia – vyber víťaza a klikni <strong>Uložiť</strong>, alebo uprav údaje podľa potreby.
+          </div>
+        )}
 
         {total === 0 && !isAdding ? (
           <div className="text-center text-gold-500/50 py-12 text-sm">

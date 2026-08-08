@@ -30,7 +30,7 @@ export function MainPage() {
     player1Name, player2Name, setPlayer1Name, setPlayer2Name,
     player1EnabledCivIds, player2EnabledCivIds, enabledMapIds,
     spinError, clearError,
-    recordMatch,
+    createPendingMatch,
   } = useRouletteStore();
 
   const { playLeverSound, playStopSound, startSpinSound, stopSpinSound, playCelebrationSound } = useSound();
@@ -95,11 +95,13 @@ export function MainPage() {
     return () => stopSpinSound();
   }, [isSpinning, startSpinSound, stopSpinSound]);
 
-  const handleRecordWinner = (winner: 'player1' | 'player2') => {
-    recordMatch(winner);
-  };
-
-  const isDone = spinPhase === 'done';
+  // When spin completes, create a pending draft match and switch to stats tab
+  useEffect(() => {
+    if (spinPhase === 'done' && result) {
+      createPendingMatch();
+      setActiveTab('stats');
+    }
+  }, [spinPhase, result, createPendingMatch]);
 
   return (
     <div className="min-h-screen bg-casino-950 text-white relative overflow-hidden">
@@ -312,46 +314,6 @@ export function MainPage() {
           </div>
 
           <div className="h-1 bg-gradient-to-r from-gold-700 via-gold-400 to-gold-700" />
-
-          {/* ── Record winner ── */}
-          <AnimatePresence>
-            {isDone && result && (
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="mt-4 text-center"
-              >
-                <div className="text-[10px] font-cinzel tracking-[0.2em] text-gold-500/70 uppercase mb-3">
-                  Zaznamenaj víťaza
-                </div>
-                <div className="flex items-center justify-center gap-3">
-                  <button
-                    onClick={() => handleRecordWinner('player1')}
-                    className="px-5 py-2.5 rounded-lg border-2 font-cinzel font-bold text-sm uppercase tracking-wider transition-all hover:scale-105"
-                    style={{
-                      borderColor: result.player1.color.hex,
-                      color: result.player1.color.hex,
-                      backgroundColor: `${result.player1.color.hex}10`,
-                    }}
-                  >
-                    {player1Name}
-                  </button>
-                  <button
-                    onClick={() => handleRecordWinner('player2')}
-                    className="px-5 py-2.5 rounded-lg border-2 font-cinzel font-bold text-sm uppercase tracking-wider transition-all hover:scale-105"
-                    style={{
-                      borderColor: result.player2.color.hex,
-                      color: result.player2.color.hex,
-                      backgroundColor: `${result.player2.color.hex}10`,
-                    }}
-                  >
-                    {player2Name}
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
           </>
         )}

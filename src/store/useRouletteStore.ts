@@ -29,12 +29,16 @@ interface RouletteState extends AppSettings {
 
   // Match history for statistics
   matchHistory: MatchRecord[];
+  // Pending draft match (created after a spin, awaiting winner selection)
+  pendingMatch: MatchRecord | null;
 
   // ── Actions ───────────────────────────────────────────────
   spin: () => void;
   setSpinPhase: (phase: SpinPhase) => void;
   clearError: () => void;
   recordMatch: (winner: 'player1' | 'player2') => void;
+  createPendingMatch: () => void;
+  clearPendingMatch: () => void;
   addMatch: (match: MatchRecord) => void;
   updateMatch: (match: MatchRecord) => void;
   deleteMatch: (id: string) => void;
@@ -74,6 +78,26 @@ export const useRouletteStore = create<RouletteState>()(
 
       // ── Match History ─────────────────────────────────────
       matchHistory: [],
+      pendingMatch: null,
+
+      createPendingMatch: () => {
+        const state = get();
+        if (!state.result) return;
+        const r = state.result;
+        const record: MatchRecord = {
+          id: `pending-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          date: new Date().toISOString(),
+          mapId: r.map.id,
+          player1CivId: r.player1.civilization.id,
+          player1ColorId: r.player1.color.id,
+          player2CivId: r.player2.civilization.id,
+          player2ColorId: r.player2.color.id,
+          winner: 'player1',
+        };
+        set({ pendingMatch: record });
+      },
+
+      clearPendingMatch: () => set({ pendingMatch: null }),
 
       recordMatch: (winner) => {
         const state = get();
@@ -89,7 +113,7 @@ export const useRouletteStore = create<RouletteState>()(
           player2ColorId: r.player2.color.id,
           winner,
         };
-        set((s) => ({ matchHistory: [record, ...s.matchHistory] }));
+        set((s) => ({ matchHistory: [record, ...s.matchHistory], pendingMatch: null }));
       },
 
       addMatch: (match) =>
