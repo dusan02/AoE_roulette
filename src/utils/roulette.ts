@@ -74,8 +74,8 @@ export function generateResult(options: SpinOptions): RouletteResult {
  */
 export function formatResultAsText(
   result: RouletteResult,
-  player1Name = 'Player 1',
-  player2Name = 'Player 2'
+  player1Name = 'Dušan',
+  player2Name = 'Michal'
 ): string {
   const { map, player1, player2 } = result;
   return [

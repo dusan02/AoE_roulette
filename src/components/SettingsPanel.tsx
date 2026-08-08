@@ -193,7 +193,7 @@ function CivsTab({
             value={player1Name}
             onChange={onSetPlayer1Name}
             accentClass="text-blue-300 border-blue-700/50 focus:border-blue-400"
-            placeholder="Player 1"
+            placeholder="Dušan"
             id="player1-name-input"
           />
           <div className="flex gap-2 ml-3 flex-shrink-0">
@@ -214,7 +214,7 @@ function CivsTab({
             value={player2Name}
             onChange={onSetPlayer2Name}
             accentClass="text-red-300 border-red-700/50 focus:border-red-400"
-            placeholder="Player 2"
+            placeholder="Michal"
             id="player2-name-input"
           />
           <div className="flex gap-2 ml-3 flex-shrink-0">

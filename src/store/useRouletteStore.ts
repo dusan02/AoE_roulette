@@ -59,8 +59,8 @@ export const useRouletteStore = create<RouletteState>()(
   persist(
     (set, get) => ({
       // ── Initial Settings ──────────────────────────────────
-      player1Name: 'Player 1',
-      player2Name: 'Player 2',
+      player1Name: 'Dušan',
+      player2Name: 'Michal',
       player1EnabledCivIds: defaultEnabledCivIds,
       player2EnabledCivIds: defaultEnabledCivIds,
       enabledMapIds: defaultEnabledMapIds,
@@ -132,8 +132,8 @@ export const useRouletteStore = create<RouletteState>()(
       clearError: () => set({ spinError: null }),
 
       // ── Player Name Actions ───────────────────────────────
-      setPlayer1Name: (name) => set({ player1Name: name || 'Player 1' }),
-      setPlayer2Name: (name) => set({ player2Name: name || 'Player 2' }),
+      setPlayer1Name: (name) => set({ player1Name: name || 'Dušan' }),
+      setPlayer2Name: (name) => set({ player2Name: name || 'Michal' }),
 
       // ── Settings Toggles ──────────────────────────────────
       togglePlayer1Civ: (civId) =>
