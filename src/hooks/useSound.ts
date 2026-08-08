@@ -27,7 +27,7 @@ async function ensureRunning(ctx: AudioContext): Promise<void> {
 // ── Sound synthesis functions ─────────────────────────────────
 
 /** Short noise burst – used as a mechanical click */
-function playClick(ctx: AudioContext, time = 0) {
+function playClick(ctx: AudioContext, time = 0, volume = 1) {
   const buf = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
   const data = buf.getChannelData(0);
   for (let i = 0; i < data.length; i++) {
@@ -36,7 +36,7 @@ function playClick(ctx: AudioContext, time = 0) {
   const src = ctx.createBufferSource();
   src.buffer = buf;
   const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0.5, ctx.currentTime + time);
+  gain.gain.setValueAtTime(0.5 * volume, ctx.currentTime + time);
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + time + 0.05);
   src.connect(gain);
   gain.connect(ctx.destination);
@@ -61,11 +61,11 @@ function playLever(ctx: AudioContext) {
   playClick(ctx, 0.09);
 }
 
-/** Reel tick burst – called on repeat while spinning */
+/** Reel tick burst – called on repeat while spinning (30% volume) */
 function playSpinTick(ctx: AudioContext) {
-  playClick(ctx, 0);
-  playClick(ctx, 0.07);
-  playClick(ctx, 0.14);
+  playClick(ctx, 0, 0.3);
+  playClick(ctx, 0.07, 0.3);
+  playClick(ctx, 0.14, 0.3);
 }
 
 /** Ascending fanfare – celebration */
