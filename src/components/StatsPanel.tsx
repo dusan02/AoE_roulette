@@ -59,8 +59,6 @@ export function StatsPanel() {
     clearPendingMatch,
     addMatch,
     updateMatch,
-    deleteMatch,
-    clearHistory,
   } = useRouletteStore();
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -241,20 +239,12 @@ export function StatsPanel() {
           </span>
         </td>
         <td className="py-2.5 px-3 text-right whitespace-nowrap">
-          <div className="flex items-center justify-end gap-2">
-            <button
-              onClick={() => startEdit(match)}
-              className="text-[10px] font-semibold uppercase tracking-wider text-gold-400 hover:text-gold-200"
-            >
-              Upraviť
-            </button>
-            <button
-              onClick={() => deleteMatch(match.id)}
-              className="text-[10px] font-semibold uppercase tracking-wider text-red-400 hover:text-red-300"
-            >
-              Zmazať
-            </button>
-          </div>
+          <button
+            onClick={() => startEdit(match)}
+            className="text-[10px] font-semibold uppercase tracking-wider text-gold-400 hover:text-gold-200 px-2 py-1 rounded hover:bg-white/5 transition-colors"
+          >
+            Upraviť
+          </button>
         </td>
       </tr>
     );
@@ -334,14 +324,6 @@ export function StatsPanel() {
             >
               + Pridať
             </button>
-            {total > 0 && (
-              <button
-                onClick={() => { if (confirm('Naozaj zmazať celú históriu?')) clearHistory(); }}
-                className="text-xs font-semibold uppercase tracking-wider text-red-400 hover:text-red-300"
-              >
-                Zmazať všetko
-              </button>
-            )}
           </div>
         </div>
 
