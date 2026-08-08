@@ -174,6 +174,7 @@ export const useRouletteStore = create<RouletteState>()(
     {
       name: 'aoe4-roulette-settings',
       storage: createJSONStorage(() => localStorage),
+      version: 2,
       // Only persist settings and names, not ephemeral UI state
       partialize: (state) => ({
         player1Name: state.player1Name,
@@ -185,6 +186,15 @@ export const useRouletteStore = create<RouletteState>()(
         muted: state.muted,
         matchHistory: state.matchHistory,
       }),
+      migrate: (persisted: unknown, version: number) => {
+        const s = (persisted ?? {}) as Record<string, unknown>;
+        // v1 -> v2: replace old default names with Dušan / Michal
+        if (version < 2) {
+          if (s.player1Name === 'Player 1' || s.player1Name === undefined) s.player1Name = 'Dušan';
+          if (s.player2Name === 'Player 2' || s.player2Name === undefined) s.player2Name = 'Michal';
+        }
+        return s;
+      },
     }
   )
 );
