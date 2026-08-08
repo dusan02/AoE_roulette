@@ -32,9 +32,12 @@ function formatDateForInput(iso: string): string {
   return `${year}-${month}-${day}T${hours}:${mins}`;
 }
 
-const defaultCiv = CIVS[0];
-const defaultCiv2 = CIVS[1] ?? CIVS[0];
-const defaultMap = MAPS[0];
+const SORTED_CIVS = [...CIVS].sort((a, b) => a.name.localeCompare(b.name));
+const SORTED_MAPS = [...MAPS].sort((a, b) => a.name.localeCompare(b.name));
+
+const defaultCiv = SORTED_CIVS[0];
+const defaultCiv2 = SORTED_CIVS[1] ?? SORTED_CIVS[0];
+const defaultMap = SORTED_MAPS[0];
 
 const emptyMatch = (): MatchRecord => ({
   id: `new-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -148,7 +151,7 @@ export function StatsPanel() {
             onChange={(e) => updateDraft('mapId', e.target.value)}
             className="w-full bg-casino-900 border border-gold-700/50 rounded px-2 py-1.5 text-xs text-gold-100 focus:border-gold-400 focus:outline-none"
           >
-            {MAPS.map((map) => (
+            {SORTED_MAPS.map((map) => (
               <option key={map.id} value={map.id}>
                 {map.name}
               </option>
@@ -161,7 +164,7 @@ export function StatsPanel() {
             onChange={(e) => updateDraft('player1CivId', e.target.value)}
             className="w-full bg-casino-900 border border-gold-700/50 rounded px-2 py-1.5 text-xs text-gold-100 focus:border-gold-400 focus:outline-none"
           >
-            {CIVS.map((civ) => (
+            {SORTED_CIVS.map((civ) => (
               <option key={civ.id} value={civ.id}>
                 {civ.name}
               </option>
@@ -174,7 +177,7 @@ export function StatsPanel() {
             onChange={(e) => updateDraft('player2CivId', e.target.value)}
             className="w-full bg-casino-900 border border-gold-700/50 rounded px-2 py-1.5 text-xs text-gold-100 focus:border-gold-400 focus:outline-none"
           >
-            {CIVS.map((civ) => (
+            {SORTED_CIVS.map((civ) => (
               <option key={civ.id} value={civ.id}>
                 {civ.name}
               </option>
