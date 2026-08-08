@@ -7,12 +7,10 @@ import { useState } from 'react';
 import { useRouletteStore } from '../store/useRouletteStore';
 import CIVS from '../data/civilizations';
 import MAPS from '../data/maps';
-import PLAYER_COLORS from '../data/colors';
 import type { MatchRecord } from '../types';
 
 const civById = (id: string) => CIVS.find((c) => c.id === id);
 const mapById = (id: string) => MAPS.find((m) => m.id === id);
-const colorById = (id: string) => PLAYER_COLORS.find((c) => c.id === id);
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -37,17 +35,15 @@ function formatDateForInput(iso: string): string {
 const defaultCiv = CIVS[0];
 const defaultCiv2 = CIVS[1] ?? CIVS[0];
 const defaultMap = MAPS[0];
-const defaultColor1 = PLAYER_COLORS[0];
-const defaultColor2 = PLAYER_COLORS[1] ?? PLAYER_COLORS[0];
 
 const emptyMatch = (): MatchRecord => ({
   id: `new-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
   date: new Date().toISOString(),
   mapId: defaultMap.id,
   player1CivId: defaultCiv.id,
-  player1ColorId: defaultColor1.id,
+  player1ColorId: '',
   player2CivId: defaultCiv2.id,
-  player2ColorId: defaultColor2.id,
+  player2ColorId: '',
   winner: 'player1',
 });
 
@@ -147,56 +143,30 @@ export function StatsPanel() {
           </select>
         </td>
         <td className="py-2 px-2 align-top">
-          <div className="space-y-2">
-            <select
-              value={draft.player1CivId}
-              onChange={(e) => updateDraft('player1CivId', e.target.value)}
-              className="w-full bg-casino-900 border border-gold-700/50 rounded px-2 py-1.5 text-xs text-gold-100 focus:border-gold-400 focus:outline-none"
-            >
-              {CIVS.map((civ) => (
-                <option key={civ.id} value={civ.id}>
-                  {civ.name}
-                </option>
-              ))}
-            </select>
-            <select
-              value={draft.player1ColorId}
-              onChange={(e) => updateDraft('player1ColorId', e.target.value)}
-              className="w-full bg-casino-900 border border-gold-700/50 rounded px-2 py-1.5 text-xs text-gold-100 focus:border-gold-400 focus:outline-none"
-            >
-              {PLAYER_COLORS.map((color) => (
-                <option key={color.id} value={color.id}>
-                  {color.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <select
+            value={draft.player1CivId}
+            onChange={(e) => updateDraft('player1CivId', e.target.value)}
+            className="w-full bg-casino-900 border border-gold-700/50 rounded px-2 py-1.5 text-xs text-gold-100 focus:border-gold-400 focus:outline-none"
+          >
+            {CIVS.map((civ) => (
+              <option key={civ.id} value={civ.id}>
+                {civ.name}
+              </option>
+            ))}
+          </select>
         </td>
         <td className="py-2 px-2 align-top">
-          <div className="space-y-2">
-            <select
-              value={draft.player2CivId}
-              onChange={(e) => updateDraft('player2CivId', e.target.value)}
-              className="w-full bg-casino-900 border border-gold-700/50 rounded px-2 py-1.5 text-xs text-gold-100 focus:border-gold-400 focus:outline-none"
-            >
-              {CIVS.map((civ) => (
-                <option key={civ.id} value={civ.id}>
-                  {civ.name}
-                </option>
-              ))}
-            </select>
-            <select
-              value={draft.player2ColorId}
-              onChange={(e) => updateDraft('player2ColorId', e.target.value)}
-              className="w-full bg-casino-900 border border-gold-700/50 rounded px-2 py-1.5 text-xs text-gold-100 focus:border-gold-400 focus:outline-none"
-            >
-              {PLAYER_COLORS.map((color) => (
-                <option key={color.id} value={color.id}>
-                  {color.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <select
+            value={draft.player2CivId}
+            onChange={(e) => updateDraft('player2CivId', e.target.value)}
+            className="w-full bg-casino-900 border border-gold-700/50 rounded px-2 py-1.5 text-xs text-gold-100 focus:border-gold-400 focus:outline-none"
+          >
+            {CIVS.map((civ) => (
+              <option key={civ.id} value={civ.id}>
+                {civ.name}
+              </option>
+            ))}
+          </select>
         </td>
         <td className="py-2 px-2 align-top text-center">
           <select
@@ -232,10 +202,7 @@ export function StatsPanel() {
     const map = mapById(match.mapId);
     const p1Civ = civById(match.player1CivId);
     const p2Civ = civById(match.player2CivId);
-    const p1Color = colorById(match.player1ColorId);
-    const p2Color = colorById(match.player2ColorId);
     const winnerName = match.winner === 'player1' ? player1Name : player2Name;
-    const winnerColor = match.winner === 'player1' ? p1Color : p2Color;
 
     return (
       <tr
@@ -247,28 +214,13 @@ export function StatsPanel() {
         </td>
         <td className="py-2.5 px-2 text-sm text-gold-100">{map?.name ?? match.mapId}</td>
         <td className="py-2.5 px-2">
-          <div className="flex items-center gap-2">
-            <div
-              className="w-2.5 h-2.5 rounded-full border border-white/20"
-              style={{ backgroundColor: p1Color?.hex ?? '#888' }}
-            />
-            <span className="text-sm text-gold-100">{p1Civ?.name ?? match.player1CivId}</span>
-          </div>
+          <span className="text-sm text-gold-100">{p1Civ?.name ?? match.player1CivId}</span>
         </td>
         <td className="py-2.5 px-2">
-          <div className="flex items-center gap-2">
-            <div
-              className="w-2.5 h-2.5 rounded-full border border-white/20"
-              style={{ backgroundColor: p2Color?.hex ?? '#888' }}
-            />
-            <span className="text-sm text-gold-100">{p2Civ?.name ?? match.player2CivId}</span>
-          </div>
+          <span className="text-sm text-gold-100">{p2Civ?.name ?? match.player2CivId}</span>
         </td>
         <td className="py-2.5 px-2 text-center">
-          <span
-            className="text-sm font-bold"
-            style={{ color: winnerColor?.hex ?? '#fff' }}
-          >
+          <span className="text-sm font-bold text-gold-300">
             {winnerName}
           </span>
         </td>
@@ -318,20 +270,14 @@ export function StatsPanel() {
         <div className="space-y-1">
           <div className="flex h-6 rounded-full overflow-hidden border border-gold-700/40">
             <div
-              className="flex items-center justify-center text-xs font-bold text-white"
-              style={{
-                width: `${(p1Wins / total) * 100}%`,
-                backgroundColor: colorById('blue')?.hex ?? '#3B82F6',
-              }}
+              className="flex items-center justify-center text-xs font-bold text-white bg-blue-500"
+              style={{ width: `${(p1Wins / total) * 100}%` }}
             >
               {p1Wins > 0 ? `${Math.round((p1Wins / total) * 100)}%` : ''}
             </div>
             <div
-              className="flex items-center justify-center text-xs font-bold text-white"
-              style={{
-                width: `${(p2Wins / total) * 100}%`,
-                backgroundColor: colorById('red')?.hex ?? '#EF4444',
-              }}
+              className="flex items-center justify-center text-xs font-bold text-white bg-red-500"
+              style={{ width: `${(p2Wins / total) * 100}%` }}
             >
               {p2Wins > 0 ? `${Math.round((p2Wins / total) * 100)}%` : ''}
             </div>
@@ -413,11 +359,11 @@ export function StatsPanel() {
                       Víťazstvá spolu
                     </td>
                     <td className="py-3 px-2 text-center">
-                      <span className="font-bold" style={{ color: colorById('blue')?.hex ?? '#3B82F6' }}>
+                      <span className="font-bold text-blue-400">
                         {p1Wins}
                       </span>
                       <span className="text-gold-500/50 mx-1">:</span>
-                      <span className="font-bold" style={{ color: colorById('red')?.hex ?? '#EF4444' }}>
+                      <span className="font-bold text-red-400">
                         {p2Wins}
                       </span>
                     </td>
