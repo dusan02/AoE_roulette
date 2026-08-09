@@ -31,6 +31,7 @@ export function MainPage() {
     player1EnabledCivIds, player2EnabledCivIds, enabledMapIds,
     spinError, clearError,
     createPendingMatch,
+    matchHistory,
   } = useRouletteStore();
 
   const { playLeverSound, playStopSound, startSpinSound, stopSpinSound, playCelebrationSound } = useSound();
@@ -129,9 +130,9 @@ export function MainPage() {
           }`}
         >
           🏆 Štatistiky
-          {useRouletteStore.getState().matchHistory.length > 0 && (
+          {matchHistory.length > 0 && (
             <span className="ml-2 bg-gold-500 text-casino-950 text-[9px] font-black rounded-full min-w-[16px] h-[16px] inline-flex items-center justify-center px-1">
-              {useRouletteStore.getState().matchHistory.length}
+              {matchHistory.length}
             </span>
           )}
         </button>

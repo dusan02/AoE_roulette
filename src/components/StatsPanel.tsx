@@ -3,29 +3,11 @@
 // Editable match history with player win counts
 // ============================================================
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useRouletteStore } from '../store/useRouletteStore';
 import CIVS from '../data/civilizations';
 import MAPS from '../data/maps';
 import type { MatchRecord } from '../types';
-
-const STORAGE_KEY = 'aoe4-roulette-settings';
-
-// Try to recover old matchHistory from localStorage before migration wiped it
-function getOldLocalMatches(): MatchRecord[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    const state = parsed?.state ?? parsed;
-    if (Array.isArray(state?.matchHistory)) {
-      return state.matchHistory as MatchRecord[];
-    }
-    return [];
-  } catch {
-    return [];
-  }
-}
 
 const civById = (id: string) => CIVS.find((c) => c.id === id);
 const mapById = (id: string) => MAPS.find((m) => m.id === id);
@@ -86,14 +68,7 @@ export function StatsPanel() {
 
   // Import state
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [oldMatches, setOldMatches] = useState<MatchRecord[]>([]);
   const [importMsg, setImportMsg] = useState<string | null>(null);
-
-  // Check for old localStorage matches on mount
-  useEffect(() => {
-    const found = getOldLocalMatches();
-    if (found.length > 0) setOldMatches(found);
-  }, []);
 
   const importMatches = async (matches: MatchRecord[]) => {
     setImportMsg(`Importujem ${matches.length} zápasov…`);
@@ -105,7 +80,6 @@ export function StatsPanel() {
       imported++;
     }
     setImportMsg(`Hotovo! Importovaných ${imported} z ${matches.length} zápasov.`);
-    setOldMatches([]);
     // Reload from server to confirm
     setTimeout(() => loadMatches(), 500);
     setTimeout(() => setImportMsg(null), 5000);
@@ -457,29 +431,6 @@ export function StatsPanel() {
         {importMsg && (
           <div className="rounded-lg border border-gold-500/40 bg-gold-900/20 px-4 py-2.5 text-xs text-gold-200">
             {importMsg}
-          </div>
-        )}
-
-        {oldMatches.length > 0 && (
-          <div className="rounded-lg border border-gold-500/40 bg-gold-900/20 px-4 py-3 text-xs text-gold-200 space-y-2">
-            <div>
-              📦 Nájdených <strong>{oldMatches.length}</strong> starých zápasov v tomto prehliadači.
-              Chceš ich importovať na server?
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => importMatches(oldMatches)}
-                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-gold-500 text-casino-950 hover:bg-gold-400 transition-all"
-              >
-                Importovať {oldMatches.length} zápasov
-              </button>
-              <button
-                onClick={() => setOldMatches([])}
-                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-casino-700 text-gold-100 hover:bg-casino-600 transition-all"
-              >
-                Zrušiť
-              </button>
-            </div>
           </div>
         )}
 
