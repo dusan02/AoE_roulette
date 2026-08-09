@@ -160,7 +160,7 @@ export function StatsPanel() {
   });
   const sortedCivStats = Object.entries(civStats)
     .map(([id, stats]) => ({ civ: civById(id) ?? { id, name: id }, ...stats }))
-    .sort((a, b) => b.matches - a.matches || b.wins - a.wins);
+    .sort((a, b) => (b.wins - b.losses) - (a.wins - a.losses) || b.wins - a.wins);
 
   const startAdd = () => {
     setIsAdding(true);
