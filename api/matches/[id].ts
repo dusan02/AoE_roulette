@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { pool } from '../_db';
-import { getUserFromAuthHeader } from '../_auth';
-import type { MatchRecord } from '../../src/types';
+import { pool } from '../_db.js';
+import { getUserFromAuthHeader } from '../_auth.js';
+import type { MatchRecord } from '../../src/types/index.js';
 
 // PUT    /api/matches/:id  → update a match
 // DELETE /api/matches/:id  → delete a match
