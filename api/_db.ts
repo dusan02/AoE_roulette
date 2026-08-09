@@ -1,9 +1,6 @@
 // Shared Neon Postgres connection for API routes
 // Uses @neondatabase/serverless which works in Vercel serverless functions
-import { Pool, neonConfig } from '@neondatabase/serverless';
-
-// Use websockets for better serverless compatibility
-neonConfig.webSocketConstructor = undefined as any;
+import { Pool } from '@neondatabase/serverless';
 
 const connectionString =
   process.env.POSTGRES_URL ||
