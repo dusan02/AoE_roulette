@@ -390,20 +390,27 @@ export function StatsPanel() {
                 <th className="text-center py-3 px-3">Zápasov</th>
                 <th className="text-center py-3 px-3">Výhry</th>
                 <th className="text-center py-3 px-3">Prehry</th>
+                <th className="text-center py-3 px-3">Body</th>
               </tr>
             </thead>
             <tbody>
-              {sortedCivStats.map(({ civ, matches, wins, losses }) => (
-                <tr
-                  key={civ.id}
-                  className="border-b border-gold-700/20 hover:bg-casino-800/40 transition-colors"
-                >
-                  <td className="py-2.5 px-3 text-gold-100">{civ.name}</td>
-                  <td className="py-2.5 px-3 text-center font-cinzel font-bold text-gold-400">{matches}</td>
-                  <td className="py-2.5 px-3 text-center font-cinzel font-bold text-gold-400">{wins}</td>
-                  <td className="py-2.5 px-3 text-center font-cinzel font-bold text-red-400">{losses}</td>
-                </tr>
-              ))}
+              {sortedCivStats.map(({ civ, matches, wins, losses }) => {
+                const points = wins - losses;
+                return (
+                  <tr
+                    key={civ.id}
+                    className="border-b border-gold-700/20 hover:bg-casino-800/40 transition-colors"
+                  >
+                    <td className="py-2.5 px-3 text-gold-100">{civ.name}</td>
+                    <td className="py-2.5 px-3 text-center font-cinzel font-bold text-gold-400">{matches}</td>
+                    <td className="py-2.5 px-3 text-center font-cinzel font-bold text-gold-400">{wins}</td>
+                    <td className="py-2.5 px-3 text-center font-cinzel font-bold text-red-400">{losses}</td>
+                    <td className={`py-2.5 px-3 text-center font-cinzel font-bold ${points > 0 ? 'text-green-400' : points < 0 ? 'text-red-400' : 'text-gold-400'}`}>
+                      {points > 0 ? `+${points}` : points}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
