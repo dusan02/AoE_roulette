@@ -146,20 +146,21 @@ export function StatsPanel() {
   const p2Wins = matchHistory.filter((m) => m.winner === 'player2').length;
   const total = matchHistory.length;
 
-  const civWins: Record<string, number> = {};
-  const civLosses: Record<string, number> = {};
+  // Combined civilization stats: matches, wins, losses
+  const civStats: Record<string, { matches: number; wins: number; losses: number }> = {};
   matchHistory.forEach((m) => {
     const winningCiv = m.winner === 'player1' ? m.player1CivId : m.player2CivId;
     const losingCiv = m.winner === 'player1' ? m.player2CivId : m.player1CivId;
-    civWins[winningCiv] = (civWins[winningCiv] || 0) + 1;
-    civLosses[losingCiv] = (civLosses[losingCiv] || 0) + 1;
+    [m.player1CivId, m.player2CivId].forEach((id) => {
+      civStats[id] = civStats[id] ?? { matches: 0, wins: 0, losses: 0 };
+      civStats[id].matches += 1;
+    });
+    civStats[winningCiv].wins += 1;
+    civStats[losingCiv].losses += 1;
   });
-  const sortedCivWins = Object.entries(civWins)
-    .map(([id, wins]) => ({ civ: civById(id) ?? { id, name: id }, wins }))
-    .sort((a, b) => b.wins - a.wins);
-  const sortedCivLosses = Object.entries(civLosses)
-    .map(([id, losses]) => ({ civ: civById(id) ?? { id, name: id }, losses }))
-    .sort((a, b) => b.losses - a.losses);
+  const sortedCivStats = Object.entries(civStats)
+    .map(([id, stats]) => ({ civ: civById(id) ?? { id, name: id }, ...stats }))
+    .sort((a, b) => b.matches - a.matches || b.wins - a.wins);
 
   const startAdd = () => {
     setIsAdding(true);
@@ -379,48 +380,32 @@ export function StatsPanel() {
         </div>
       )}
 
-      {/* Civilization win & loss counts */}
-      {(sortedCivWins.length > 0 || sortedCivLosses.length > 0) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Wins by civilization */}
-          {sortedCivWins.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-lg font-cinzel font-bold text-gold-300 border-b border-gold-700/30 pb-2">
-                Výhry podľa civilizácie
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {sortedCivWins.map(({ civ, wins }) => (
-                  <div
-                    key={civ.id}
-                    className="flex items-center justify-between rounded-lg border border-gold-700/30 bg-casino-800/40 px-3 py-2"
-                  >
-                    <span className="text-sm text-gold-100 truncate mr-2">{civ.name}</span>
-                    <span className="text-sm font-cinzel font-bold text-gold-400">{wins}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Losses by civilization */}
-          {sortedCivLosses.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-lg font-cinzel font-bold text-gold-300 border-b border-gold-700/30 pb-2">
-                Prehry podľa civilizácie
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {sortedCivLosses.map(({ civ, losses }) => (
-                  <div
-                    key={civ.id}
-                    className="flex items-center justify-between rounded-lg border border-gold-700/30 bg-casino-800/40 px-3 py-2"
-                  >
-                    <span className="text-sm text-gold-100 truncate mr-2">{civ.name}</span>
-                    <span className="text-sm font-cinzel font-bold text-red-400">{losses}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+      {/* Civilization stats table (matches / wins / losses) */}
+      {sortedCivStats.length > 0 && (
+        <div className="overflow-x-auto rounded-xl border border-gold-700/30 bg-casino-900/40">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-gold-500/70 text-[10px] uppercase tracking-wider border-b border-gold-700/30 bg-casino-800/60">
+                <th className="text-left py-3 px-3">Civilizácia</th>
+                <th className="text-center py-3 px-3">Zápasov</th>
+                <th className="text-center py-3 px-3">Výhry</th>
+                <th className="text-center py-3 px-3">Prehry</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedCivStats.map(({ civ, matches, wins, losses }) => (
+                <tr
+                  key={civ.id}
+                  className="border-b border-gold-700/20 hover:bg-casino-800/40 transition-colors"
+                >
+                  <td className="py-2.5 px-3 text-gold-100">{civ.name}</td>
+                  <td className="py-2.5 px-3 text-center font-cinzel font-bold text-gold-400">{matches}</td>
+                  <td className="py-2.5 px-3 text-center font-cinzel font-bold text-gold-400">{wins}</td>
+                  <td className="py-2.5 px-3 text-center font-cinzel font-bold text-red-400">{losses}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
