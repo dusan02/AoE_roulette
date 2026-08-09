@@ -3,7 +3,7 @@
 // Editable match history with player win counts
 // ============================================================
 
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouletteStore } from '../store/useRouletteStore';
 import CIVS from '../data/civilizations';
 import MAPS from '../data/maps';
