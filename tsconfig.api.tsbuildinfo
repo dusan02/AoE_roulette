@@ -1,0 +1,1 @@
+{"root":["./api/_auth.ts","./api/_db.ts","./api/auth/login.ts","./api/auth/signup.ts","./api/matches/[id].ts","./api/matches/index.ts","./src/types/index.ts"],"version":"6.0.3"}

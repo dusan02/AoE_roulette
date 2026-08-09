@@ -1,5 +1,9 @@
-// Shared Postgres connection pool for API routes
-import { Pool } from 'pg';
+// Shared Neon Postgres connection for API routes
+// Uses @neondatabase/serverless which works in Vercel serverless functions
+import { Pool, neonConfig } from '@neondatabase/serverless';
+
+// Use websockets for better serverless compatibility
+neonConfig.webSocketConstructor = undefined as any;
 
 const connectionString =
   process.env.POSTGRES_URL ||
@@ -8,16 +12,8 @@ const connectionString =
   '';
 
 if (!connectionString) {
-  // We don't throw at import time so that `vercel dev` / build doesn't crash
-  // when env vars are missing; individual routes will surface a clear error.
   console.warn('[db] No POSTGRES_URL / DATABASE_URL env var found.');
 }
 
-export const pool = new Pool({
-  connectionString,
-  // Neon / Vercel Postgres require SSL
-  ssl: connectionString ? { rejectUnauthorized: false } : undefined,
-  max: 5,
-});
-
+export const pool = new Pool({ connectionString });
 export type DB = typeof pool;
