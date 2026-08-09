@@ -59,6 +59,9 @@ export function StatsPanel() {
     clearPendingMatch,
     addMatch,
     updateMatch,
+    matchesLoading,
+    syncError,
+    loadMatches,
   } = useRouletteStore();
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -364,6 +367,14 @@ export function StatsPanel() {
           </h3>
           <div className="flex items-center gap-3 ml-4">
             <button
+              onClick={() => loadMatches()}
+              disabled={matchesLoading}
+              className="text-xs font-semibold uppercase tracking-wider text-gold-400 hover:text-gold-200 disabled:opacity-50"
+              title="Načítať najnovšie dáta zo servera"
+            >
+              {matchesLoading ? '↻ Načítava…' : '↻ Obnoviť'}
+            </button>
+            <button
               onClick={startAdd}
               className="text-xs font-semibold uppercase tracking-wider text-gold-400 hover:text-gold-200"
             >
@@ -371,6 +382,12 @@ export function StatsPanel() {
             </button>
           </div>
         </div>
+
+        {syncError && (
+          <div className="rounded-lg border border-red-500/40 bg-red-900/20 px-4 py-2.5 text-xs text-red-300">
+            ⚠ {syncError}
+          </div>
+        )}
 
         {pendingMatch && (
           <div className="rounded-lg border border-gold-500/40 bg-gold-900/20 px-4 py-2.5 text-xs text-gold-200">

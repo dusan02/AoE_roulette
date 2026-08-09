@@ -1,6 +1,6 @@
 // ============================================================
 // AoE IV Roulette – Zustand Store
-// Central state management with localStorage persistence
+// Settings persisted to localStorage; matchHistory synced via API
 // ============================================================
 
 import { create } from 'zustand';
@@ -10,6 +10,12 @@ import MAPS from '../data/maps';
 import PLAYER_COLORS from '../data/colors';
 import { generateResult } from '../utils/roulette';
 import type { AppSettings, MatchRecord, RouletteResult, SpinPhase } from '../types';
+import {
+  fetchMatches,
+  createMatch as apiCreateMatch,
+  updateMatch as apiUpdateMatch,
+  deleteMatch as apiDeleteMatch,
+} from '../lib/api';
 
 // Default settings: all base-game civs enabled for both players, all maps enabled
 const defaultEnabledCivIds = CIVS.filter((c) => c.dlc === 'base').map((c) => c.id);
@@ -27,8 +33,12 @@ interface RouletteState extends AppSettings {
   // Last spin error message (e.g., not enough civs/maps)
   spinError: string | null;
 
-  // Match history for statistics
+  // Match history for statistics (synced with API, NOT persisted to localStorage)
   matchHistory: MatchRecord[];
+  // Whether match history is currently loading from the API
+  matchesLoading: boolean;
+  // Sync error message (if API call fails)
+  syncError: string | null;
   // Pending draft match (created after a spin, awaiting winner selection)
   pendingMatch: MatchRecord | null;
 
@@ -43,6 +53,9 @@ interface RouletteState extends AppSettings {
   updateMatch: (match: MatchRecord) => void;
   deleteMatch: (id: string) => void;
   clearHistory: () => void;
+
+  // API sync actions
+  loadMatches: () => Promise<void>;
 
   // Player name actions
   setPlayer1Name: (name: string) => void;
@@ -76,9 +89,24 @@ export const useRouletteStore = create<RouletteState>()(
       spinPhase: 'idle',
       spinError: null,
 
-      // ── Match History ─────────────────────────────────────
+      // ── Match History (API-synced) ────────────────────────
       matchHistory: [],
+      matchesLoading: false,
+      syncError: null,
       pendingMatch: null,
+
+      loadMatches: async () => {
+        set({ matchesLoading: true, syncError: null });
+        try {
+          const matches = await fetchMatches();
+          set({ matchHistory: matches, matchesLoading: false });
+        } catch (err) {
+          set({
+            matchesLoading: false,
+            syncError: err instanceof Error ? err.message : 'Nepodarilo sa načítať zápasy.',
+          });
+        }
+      },
 
       createPendingMatch: () => {
         const state = get();
@@ -113,21 +141,56 @@ export const useRouletteStore = create<RouletteState>()(
           player2ColorId: r.player2.color.id,
           winner,
         };
+        // Optimistic local update
         set((s) => ({ matchHistory: [record, ...s.matchHistory], pendingMatch: null }));
+        // Sync to API
+        apiCreateMatch(record).catch((err) => {
+          console.error('[recordMatch] API sync failed:', err);
+          set({ syncError: 'Zápas sa uložil lokálne, ale nepodarilo sa synchronizovať so serverom.' });
+        });
       },
 
-      addMatch: (match) =>
-        set((s) => ({ matchHistory: [match, ...s.matchHistory] })),
+      addMatch: (match) => {
+        // Optimistic local update
+        set((s) => ({ matchHistory: [match, ...s.matchHistory] }));
+        // Sync to API
+        apiCreateMatch(match).catch((err) => {
+          console.error('[addMatch] API sync failed:', err);
+          set({ syncError: 'Zápas sa uložil lokálne, ale nepodarilo sa synchronizovať so serverom.' });
+        });
+      },
 
-      updateMatch: (match) =>
+      updateMatch: (match) => {
+        // Optimistic local update
         set((s) => ({
           matchHistory: s.matchHistory.map((m) => (m.id === match.id ? match : m)),
-        })),
+        }));
+        // Sync to API
+        apiUpdateMatch(match).catch((err) => {
+          console.error('[updateMatch] API sync failed:', err);
+          set({ syncError: 'Zápas sa upravil lokálne, ale nepodarilo sa synchronizovať so serverom.' });
+        });
+      },
 
-      deleteMatch: (id) =>
-        set((s) => ({ matchHistory: s.matchHistory.filter((m) => m.id !== id) })),
+      deleteMatch: (id) => {
+        // Optimistic local update
+        set((s) => ({ matchHistory: s.matchHistory.filter((m) => m.id !== id) }));
+        // Sync to API
+        apiDeleteMatch(id).catch((err) => {
+          console.error('[deleteMatch] API sync failed:', err);
+          set({ syncError: 'Zápas sa vymazal lokálne, ale nepodarilo sa synchronizovať so serverom.' });
+        });
+      },
 
-      clearHistory: () => set({ matchHistory: [] }),
+      clearHistory: () => {
+        // Delete all matches via API, then clear local state
+        const matches = get().matchHistory;
+        set({ matchHistory: [] });
+        Promise.all(matches.map((m) => apiDeleteMatch(m.id))).catch((err) => {
+          console.error('[clearHistory] API sync failed:', err);
+          set({ syncError: 'Nepodarilo sa vymazať históriu zo servera.' });
+        });
+      },
 
       // ── Spin Action ───────────────────────────────────────
       spin: () => {
@@ -198,8 +261,8 @@ export const useRouletteStore = create<RouletteState>()(
     {
       name: 'aoe4-roulette-settings',
       storage: createJSONStorage(() => localStorage),
-      version: 2,
-      // Only persist settings and names, not ephemeral UI state
+      version: 3,
+      // Only persist settings and names — matchHistory is now API-synced
       partialize: (state) => ({
         player1Name: state.player1Name,
         player2Name: state.player2Name,
@@ -208,7 +271,6 @@ export const useRouletteStore = create<RouletteState>()(
         enabledMapIds: state.enabledMapIds,
         allowDuplicateCivs: state.allowDuplicateCivs,
         muted: state.muted,
-        matchHistory: state.matchHistory,
       }),
       migrate: (persisted: unknown, version: number) => {
         const s = (persisted ?? {}) as Record<string, unknown>;
@@ -216,6 +278,10 @@ export const useRouletteStore = create<RouletteState>()(
         if (version < 2) {
           if (s.player1Name === 'Player 1' || s.player1Name === undefined) s.player1Name = 'Dušan';
           if (s.player2Name === 'Player 2' || s.player2Name === undefined) s.player2Name = 'Michal';
+        }
+        // v2 -> v3: matchHistory moved to API — remove from localStorage
+        if (version < 3) {
+          delete s.matchHistory;
         }
         return s;
       },
