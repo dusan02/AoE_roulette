@@ -17,6 +17,7 @@ const DLC_ORDER: DlcName[] = [
   'Knights of Cross and Rose',
   'Dynasties of the East',
   "Yue Fei's Legacy",
+  'Raiders of the North',
 ];
 
 const DLC_LABELS: Record<DlcName, string> = {
@@ -25,6 +26,7 @@ const DLC_LABELS: Record<DlcName, string> = {
   'Knights of Cross and Rose': '✝ Knights of Cross and Rose',
   'Dynasties of the East': '🐉 Dynasties of the East',
   "Yue Fei's Legacy": "🏹 Yue Fei's Legacy",
+  'Raiders of the North': '🪓 Raiders of the North',
 };
 
 export function SettingsPanel() {

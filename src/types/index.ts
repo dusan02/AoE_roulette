@@ -9,7 +9,8 @@ export type DlcName =
   | 'The Sultans Ascend'
   | 'Knights of Cross and Rose'
   | 'Dynasties of the East'
-  | "Yue Fei's Legacy";
+  | "Yue Fei's Legacy"
+  | 'Raiders of the North';
 
 export interface Civilization {
   id: string;

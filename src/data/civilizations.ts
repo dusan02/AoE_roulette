@@ -39,6 +39,10 @@ const CIVS: Civilization[] = [
 
   // ── Yue Fei's Legacy DLC ──────────────────────────────────
   { id: 'jin-dynasty', name: 'Jin Dynasty', dlc: "Yue Fei's Legacy", type: 'full' },
+
+  // ── Raiders of the North DLC ──────────────────────────────
+  { id: 'scots', name: 'Scots', dlc: 'Raiders of the North', type: 'full' },
+  { id: 'vikings', name: 'Vikings', dlc: 'Raiders of the North', type: 'full' },
 ];
 
 export default CIVS;
